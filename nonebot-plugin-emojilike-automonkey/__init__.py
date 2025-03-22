@@ -20,6 +20,8 @@ from nonebot_plugin_apscheduler import scheduler  # noqa: E402
 import nonebot_plugin_localstore as store  # noqa: E402
 from typing import Set, List
 
+automonkey_keys_file = "automonkey_keys.json"
+
 driver = get_driver()
 
 __plugin_meta__ = PluginMetadata(
@@ -34,8 +36,8 @@ __plugin_meta__ = PluginMetadata(
 automonkey_users: List[str] = driver.config.automonkey_users
 automonkey_users = set(automonkey_users)
 
-automonkey_keys: List[str] = driver.config.automonkey_keys
-automonkey_keys = set(automonkey_keys)
+#automonkey_keys: List[str] = driver.config.automonkey_keys
+
 
 class AutoMonkeyState:
     _instance = None
@@ -100,9 +102,9 @@ async def handle_keycheck_toggle(bot: Bot, event: GroupMessageEvent):
 
 usercheck_cmd = on_command(
     "贴猴用户检测", 
-    aliases={"开启用户检测", "关闭用户检测"}, 
+    aliases={"开启贴猴用户检测", "关闭贴猴用户检测"}, 
     permission=GROUP,
-    rule=to_me()
+    #rule=to_me()
 )
 
 @usercheck_cmd.handle()
@@ -127,8 +129,21 @@ def normalize_text(text: str) -> str:
         text
     )
 
+def load_automonkey_keys() -> Set[str]:
+    """从本地存储加载关键词"""
+    data_file = store.get_plugin_data_file(automonkey_keys_file)
+    if not data_file.exists():
+        data_file.write_text(json.dumps([]))
+    return set(json.loads(data_file.read_text()))
+
+def save_automonkey_keys(keys: Set[str]):
+    """保存关键词到本地存储"""
+    data_file = store.get_plugin_data_file(automonkey_keys_file)
+    data_file.write_text(json.dumps(list(keys)))
+
 # 预处理关键词（保留中文，英文转小写）
-processed_keys = {normalize_text(key) for key in driver.config.automonkey_keys}
+automonkey_keys = load_automonkey_keys()
+processed_keys = {normalize_text(key) for key in automonkey_keys}
 
 async def check_automonkey_condition(event: GroupMessageEvent) -> bool:
     # 全局开关检查
@@ -313,6 +328,63 @@ async def _(bot: Bot, event: MessageEvent):
         "set_msg_emoji_like", message_id=event.message_id, emoji_id="424"
     )
 
+manage_key_cmd = on_command(
+    "贴猴关键词", 
+    aliases={"添加贴猴关键词", "删除贴猴关键词"}, 
+    permission=GROUP,
+    #rule=to_me()
+)
+
+@manage_key_cmd.handle()
+async def handle_manage_key(bot: Bot, event: MessageEvent):
+    cmd = event.get_plaintext().split()
+    if len(cmd) < 2:
+        await bot.send(event, "格式错误，请使用：添加贴猴关键词/删除贴猴关键词 [关键词]")
+        return
+
+    action = cmd[0]
+    key = " ".join(cmd[1:])
+    
+    global automonkey_keys, processed_keys
+    
+    if action == "添加贴猴关键词":
+        if key in automonkey_keys:
+            await bot.send(event, f"⚠️ 关键词 [{key}] 已存在")
+            return
+        automonkey_keys.add(key)
+        processed_keys.add(normalize_text(key))
+        save_automonkey_keys(automonkey_keys)
+        await bot.send(event, f"✅ 已添加关键词 [{key}]")
+        logger.info(f"管理员添加贴猴关键词: {key}")
+
+    elif action == "删除贴猴关键词":
+        if key not in automonkey_keys:
+            await bot.send(event, f"⚠️ 关键词 [{key}] 不存在")
+            return
+        automonkey_keys.remove(key)
+        processed_keys = {normalize_text(k) for k in automonkey_keys}
+        save_automonkey_keys(automonkey_keys)
+        await bot.send(event, f"🗑️ 已删除关键词 [{key}]")
+        logger.info(f"管理员删除贴猴关键词: {key}")
+
+    else:
+        await bot.send(event, "❌ 未知操作，支持命令：添加贴猴关键词/删除贴猴关键词")
+
+list_automonkey_keys_cmd = on_command(
+    cmd = "列出当前贴猴关键词",
+    permission=GROUP,
+)
+
+@list_automonkey_keys_cmd.handle()
+async def handle_list_automonkey_keys(bot: Bot, event: GroupMessageEvent):
+    
+    # 构建菜单消息
+    list_automonkey_keys_msg = f"""
+当前监控关键词：{', '.join(automonkey_keys) or "无"}
+    """.strip()
+
+    await bot.send(event, list_automonkey_keys_msg)
+
 menu_cmd = on_command(
     cmd="贴猴菜单", 
     permission=GROUP,
@@ -337,8 +409,8 @@ async def handle_menu(bot: Bot, event: GroupMessageEvent):
 
 {status_user} - 用户检测
   权限：群聊
-  开启命令：开启用户检测
-  关闭命令：关闭用户检测
+  开启命令：开启贴猴用户检测
+  关闭命令：关闭贴猴用户检测
   → 当前模式：{"仅监控名单用户" if state.user_check_enabled else "监控所有用户"}
 
 {status_key} - 关键词检测
@@ -346,14 +418,18 @@ async def handle_menu(bot: Bot, event: GroupMessageEvent):
   开启命令：开启贴猴关键词检测
   关闭命令：关闭贴猴关键词检测
   → 当前模式：{"需触发关键词" if state.key_check_enabled else "任意消息均触发"}
+
+🐵🐵 - 调整贴猴关键词
+  权限：群聊
+  增加命令：增加贴猴关键词+空格+关键词
+  删除命令：删除贴猴关键词+空格+关键词
+  查看命令：列出当前贴猴关键词
 ━━━━━━━━━━━━━━
 当前贴猴名单用户：{', '.join(driver.config.automonkey_users) or "无"}
-当前监控关键词：{', '.join(driver.config.automonkey_keys) or "无"}
     """.strip()
 
     await bot.send(event, menu_msg)
     #logger.info(f"管理员 {event.user_id} 查看了系统菜单")
-
 
 @scheduler.scheduled_job("cron", hour=8, minute=0, id="sub_card_like")
 async def _():
