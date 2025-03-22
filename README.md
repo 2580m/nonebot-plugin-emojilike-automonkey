@@ -7,7 +7,7 @@
 
 # nonebot-plugin-emojilike
 
-_✨ NoneBot onebotV11 贴猴插件 ✨_
+_✨ NoneBot onebotV11 贴猴插件，Fork form fllesser/nonebot-plugin-emojilike，Powered by Deepseek-R1 ✨_
 
 
 <a href="./LICENSE">
