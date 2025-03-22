@@ -23,7 +23,8 @@ _✨ NoneBot onebotV11 贴猴插件，Fork form fllesser/nonebot-plugin-emojilik
 
 ## 📖 介绍
 
-NoneBot onebotV11 贴猴插件，Fork form fllesser/nonebot-plugin-emojilike，Powered by Deepseek-R1\n配置好.env文件中的配置项后可以实现对特定QQ用户的包含特定关键词的信息进行贴猴，妈妈再也不用担心我的腱鞘炎了
+NoneBot onebotV11 贴猴插件，Fork form fllesser/nonebot-plugin-emojilike，Powered by Deepseek-R1  
+配置好.env文件中的配置项后可以实现对特定QQ用户的包含特定关键词的信息进行贴猴，妈妈再也不用担心我的腱鞘炎了
 
 ## 💿 安装
 
