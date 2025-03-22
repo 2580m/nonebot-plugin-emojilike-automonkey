@@ -197,23 +197,23 @@ def contain_face(event: GroupMessageEvent) -> bool:
     )
 
 
-@on_message(
-    rule=Rule(contain_face), permission=GROUP, block=False, priority=999
-).handle()
-async def _(bot: Bot, event: GroupMessageEvent):
-    msg = event.get_message()
-    msg_emoji_id_set: set[int] = {
-        int(seg.data["id"]) for seg in msg if seg.type == "face"
-    } | {
-        ord(char)
-        for char in msg.extract_plain_text().strip()
-        if char in emoji.EMOJI_DATA
-    }
-    for id in msg_emoji_id_set:
-        if id in emoji_like_id_set:
-            await bot.call_api(
-                "set_msg_emoji_like", message_id=event.message_id, emoji_id=id
-            )
+#@on_message(
+#    rule=Rule(contain_face), permission=GROUP, block=False, priority=999
+#).handle()
+#async def _(bot: Bot, event: GroupMessageEvent):
+#    msg = event.get_message()
+#    msg_emoji_id_set: set[int] = {
+#        int(seg.data["id"]) for seg in msg if seg.type == "face"
+#    } | {
+#        ord(char)
+#        for char in msg.extract_plain_text().strip()
+#        if char in emoji.EMOJI_DATA
+#    }
+#    for id in msg_emoji_id_set:
+#        if id in emoji_like_id_set:
+#            await bot.call_api(
+#                "set_msg_emoji_like", message_id=event.message_id, emoji_id=id
+#            )
 
 
 #like_monkey = on_message(
