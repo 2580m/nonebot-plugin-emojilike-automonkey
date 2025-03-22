@@ -23,7 +23,7 @@ _✨ NoneBot onebotV11 贴猴插件，Fork form fllesser/nonebot-plugin-emojilik
 
 ## 📖 介绍
 
-NoneBot onebotV11 贴猴插件
+NoneBot onebotV11 贴猴插件，Fork form fllesser/nonebot-plugin-emojilike，Powered by Deepseek-R1
 
 ## 💿 安装
 
