@@ -5,7 +5,7 @@
 
 <div align="center">
 
-# nonebot-plugin-emojilike
+# nonebot-plugin-emojilike-automonkey
 
 _✨ NoneBot onebotV11 贴猴插件，Fork form fllesser/nonebot-plugin-emojilike，Powered by Deepseek-R1 ✨_
 
