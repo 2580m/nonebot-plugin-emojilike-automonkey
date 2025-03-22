@@ -7,7 +7,7 @@
 
 # nonebot-plugin-emojilike
 
-_✨ NoneBot onebotV11 点赞，表情回应插件 ✨_
+_✨ NoneBot onebotV11 贴猴插件 ✨_
 
 
 <a href="./LICENSE">
@@ -23,7 +23,7 @@ _✨ NoneBot onebotV11 点赞，表情回应插件 ✨_
 
 ## 📖 介绍
 
-NoneBot onebotV11 点赞，表情回应插件
+NoneBot onebotV11 贴猴插件
 
 ## 💿 安装
 
