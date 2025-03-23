@@ -31,8 +31,15 @@ NoneBot onebotV11 贴猴插件，Fork form fllesser/nonebot-plugin-emojilike，P
 <details open>
 <summary>pip</summary>
 
-    pip install --upgrade nonebot-plugin-emojilike
+    pip install --upgrade nonebot-plugin-emojilike-automonkey
 </details>
+
+打开 nonebot2 项目根目录下的 `pyproject.toml` 文件, 在 `[tool.nonebot]` 部分追加写入
+
+    plugins = ["nonebot_plugin_emojilike"]
+
+</details>
+
 
 ## 🎉 使用
 ### .env中的配置项
