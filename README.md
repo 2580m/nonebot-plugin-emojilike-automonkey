@@ -28,7 +28,11 @@ NoneBot onebotV11 贴猴插件，Fork form fllesser/nonebot-plugin-emojilike，P
 
 ## 💿 安装
 
-暂无
+<details open>
+<summary>pip</summary>
+
+    pip install --upgrade nonebot-plugin-emojilike
+</details>
 
 ## 🎉 使用
 ### .env中的配置项
