@@ -1,17 +1,18 @@
 [tool.poetry]
-name = "nonebot-plugin-emojilike"
-version = "0.1.1"
-description = "nonebot2 名片赞，表情回应插件"
-authors = ["fllesser <fllessive@gmail.com>"]
+name = "nonebot-plugin-emojilike-automonkey"
+version = "0.0.12"
+description = "nonebot2贴猴插件"
+authors = ["BG4JEC <BG4JEC@hotmail.com>"]
 readme = "README.md"
-packages = [{include = "nonebot_plugin_emojilike"}]
-repository = "https://github.com/fllesser/nonebot-plugin-emojilike"
+packages = [{include = "nonebot_plugin_emojilike_automonkey"}]
+repository = "https://github.com/2580m/nonebot-plugin-emojilike-automonkey"
 keywords = ["nonebot", "nonebot2", "emoji", "like"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
 emoji = "^2.0.0"
 nonebot2 = "^2.4.0"
+pydantic = "<2.0.0"
 nonebot-adapter-onebot = "^2.4.6"
 nonebot_plugin_localstore = ">=0.7.3,<1"
 nonebot-plugin-apscheduler = ">=0.5.0,<1"
@@ -22,7 +23,7 @@ nonebot2 = {version = "^2.4.0", extras = ["fastapi"]}
 
 [tool.nonebot]
 adapters = [{name="OnebotAdapterV11", module_name="nonebot.adapters.onebot.v11"}]
-plugins = ["nonebot_plugin_emojilike"]
+plugins = ["nonebot_plugin_emojilike_automonkey"]
 
 [build-system]
 requires = ["poetry-core"]
