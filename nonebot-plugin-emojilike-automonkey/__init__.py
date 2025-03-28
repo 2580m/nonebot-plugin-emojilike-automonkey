@@ -3,16 +3,17 @@ import emoji
 import re
 
 from nonebot import logger, require, get_driver, get_bots
+from nonebot import get_plugin_config
+from .config import Config
 from nonebot.plugin import PluginMetadata
 from nonebot.plugin.on import (
     on_command,
     on_message,
 )
 from nonebot.permission import SUPERUSER
-from nonebot.rule import Rule, to_me
+from nonebot.rule import Rule
 from nonebot.adapters.onebot.v11 import Bot, MessageEvent, GroupMessageEvent
 from nonebot.adapters.onebot.v11.permission import GROUP
-from .face import emoji_like_id_set
 
 require("nonebot_plugin_localstore")
 require("nonebot_plugin_apscheduler")
@@ -22,19 +23,27 @@ from typing import Set, List
 
 automonkey_keys_file = "automonkey_keys.json"
 
-driver = get_driver()
+#driver = get_driver()
+
+plugin_config = get_plugin_config(Config)
 
 __plugin_meta__ = PluginMetadata(
-    name="名片赞，表情回应插件",
-    description="nonebot2 名片赞，表情回应插件",
-    usage="赞我, 发送带表情的消息",
+    name="nonebot-plugin-emojilike-automonkey",
+    description="nonebot2 贴猴插件",
+    usage="""
+    在.env文件中添加以下配置项:
+    automonkey_users:List[str]监测的用户
+    automonkey_groups:List[str]监测的群聊
+    输入"<COMMANDSTART>贴猴菜单"查看具体使用方式
+    """,
     type="application",
-    homepage="https://github.com/fllesser/nonebot-plugin-emojilike",
+    homepage="https://github.com/2580m/nonebot-plugin-emojilike-automonkey",
     supported_adapters={"~onebot.v11"},
 )
 
-automonkey_users: List[str] = driver.config.automonkey_users
-automonkey_users = set(automonkey_users)
+automonkey_users: List[str] = plugin_config.automonkey_users
+#automonkey_users = set(automonkey_users)
+automonkey_groups: List[str] = plugin_config.automonkey_groups  
 
 #automonkey_keys: List[str] = driver.config.automonkey_keys
 
@@ -48,6 +57,7 @@ class AutoMonkeyState:
             cls._instance.enabled = True           # 总开关
             cls._instance.key_check_enabled = False # 关键词检测开关
             cls._instance.user_check_enabled = True # 新增用户检测开关
+            cls._instance.group_check_enabled = True  # 新增群聊检测开关
         return cls._instance
     
     def enable(self):
@@ -58,6 +68,26 @@ class AutoMonkeyState:
 
 # 全局访问点
 state = AutoMonkeyState()
+
+groupcheck_cmd = on_command(
+    "贴猴群聊检测", 
+    aliases={"开启贴猴群聊检测", "关闭贴猴群聊检测"}, 
+    permission=GROUP,
+)
+
+@groupcheck_cmd.handle()
+async def handle_groupcheck_toggle(bot: Bot, event: GroupMessageEvent):
+    cmd = event.get_plaintext().strip()
+    
+    if "开启" in cmd:
+        state.group_check_enabled = True
+        msg = "👥 已启用群聊检测（仅监控指定群组）"
+    elif "关闭" in cmd:
+        state.group_check_enabled = False
+        msg = "🌐 已禁用群聊检测（监控所有群组）"
+    
+    await bot.send(event, msg)
+    logger.info(f"群聊检测状态变更为：{state.group_check_enabled}")
 
 toggle_monkey = on_command(
     cmd="自动贴猴", 
@@ -138,7 +168,7 @@ def load_automonkey_keys() -> Set[str]:
 
 def save_automonkey_keys(keys: Set[str]):
     """保存关键词到本地存储"""
-    data_file = store.get_plugin_data_file(automonkey_keys_file)
+    #data_file = store.get_plugin_data_file(automonkey_keys_file)
     data_file.write_text(json.dumps(list(keys)))
 
 # 预处理关键词（保留中文，英文转小写）
@@ -149,6 +179,11 @@ async def check_automonkey_condition(event: GroupMessageEvent) -> bool:
     # 全局开关检查
     if not state.enabled:
         return False
+    
+     # 新增群聊检测逻辑
+    if state.group_check_enabled:
+        if str(event.group_id) not in automonkey_groups:
+            return False
     
     # 基础条件校验
     # 用户检测逻辑
@@ -164,7 +199,7 @@ async def check_automonkey_condition(event: GroupMessageEvent) -> bool:
     # 用户检测逻辑
     if state.user_check_enabled:
         # 当启用用户检测时检查白名单
-        if str(event.user_id) not in driver.config.automonkey_users:
+        if str(event.user_id) not in plugin_config.automonkey_users:
             return False
     
     # 机器人自身消息过滤（始终生效）
@@ -322,7 +357,7 @@ async def _():
 @on_command(cmd="天天赞我", aliases={"天天草我"}, permission=GROUP).handle()
 async def _(bot: Bot, event: MessageEvent):
     sub_like_set.add(event.user_id)
-    data_file = store.get_plugin_data_file(sub_list_file)
+    #data_file = store.get_plugin_data_file(sub_list_file)
     data_file.write_text(json.dumps(list(sub_like_set)))
     await bot.call_api(
         "set_msg_emoji_like", message_id=event.message_id, emoji_id="424"
@@ -397,6 +432,7 @@ async def handle_menu(bot: Bot, event: GroupMessageEvent):
     status_total = "✅ 开启" if state.enabled else "⛔ 关闭"
     status_user = "🔍 开启" if state.user_check_enabled else "👁️ 关闭"
     status_key = "📖 开启" if state.key_check_enabled else "📭 关闭"
+    status_group = "👥 开启" if state.group_check_enabled else "🌐 关闭"
     
     # 构建菜单消息
     menu_msg = f"""
@@ -419,13 +455,20 @@ async def handle_menu(bot: Bot, event: GroupMessageEvent):
   关闭命令：关闭贴猴关键词检测
   → 当前模式：{"需触发关键词" if state.key_check_enabled else "任意消息均触发"}
 
+{status_group} - 群聊检测
+  权限：群聊
+  开启命令：开启贴猴群聊检测
+  关闭命令：关闭贴猴群聊检测
+  → 当前模式：{"仅监控指定群组" if state.group_check_enabled else "监控所有群组"}
+
 🐵🐵 - 调整贴猴关键词
   权限：群聊
   增加命令：增加贴猴关键词+空格+关键词
   删除命令：删除贴猴关键词+空格+关键词
   查看命令：列出当前贴猴关键词
 ━━━━━━━━━━━━━━
-当前贴猴名单用户：{', '.join(driver.config.automonkey_users) or "无"}
+当前贴猴名单用户：{', '.join(plugin_config.automonkey_users) or "无"}
+当前贴猴群组：{', '.join(plugin_config.automonkey_groups) or "无"}
     """.strip()
 
     await bot.send(event, menu_msg)
