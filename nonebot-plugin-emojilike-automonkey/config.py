@@ -1,4 +1,4 @@
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 from typing import List
 
 class Config(BaseModel):
@@ -7,7 +7,7 @@ class Config(BaseModel):
     #automonkey_command_priority: int = 10
     automonkey_plugin_enabled: bool = True
 
-    @root_validator
+    @model_validator
     @classmethod
     def check_priority(cls, values: dict) -> dict:
         priority = values.get("automonkey_command_priority")
