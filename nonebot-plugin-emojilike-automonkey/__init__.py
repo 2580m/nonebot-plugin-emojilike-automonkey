@@ -20,12 +20,18 @@ require("nonebot_plugin_apscheduler")
 from nonebot_plugin_apscheduler import scheduler  # noqa: E402
 import nonebot_plugin_localstore as store  # noqa: E402
 from typing import Set, List
+from .config import Config
 
 automonkey_keys_file = "automonkey_keys.json"
 
 #driver = get_driver()
 
-plugin_config = get_plugin_config(Config)
+#plugin_config = get_plugin_config(Config)
+
+try:
+    plugin_config = get_plugin_config(Config)
+except ImportError:
+    plugin_config = Config.parse_obj(get_driver().config)
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot-plugin-emojilike-automonkey",
@@ -36,6 +42,7 @@ __plugin_meta__ = PluginMetadata(
     automonkey_groups:List[str]监测的群聊
     输入"<COMMANDSTART>贴猴菜单"查看具体使用方式
     """,
+    config=Config,
     type="application",
     homepage="https://github.com/2580m/nonebot-plugin-emojilike-automonkey",
     supported_adapters={"~onebot.v11"},
