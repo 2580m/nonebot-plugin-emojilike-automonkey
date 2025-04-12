@@ -26,19 +26,14 @@ _✨ NoneBot onebotV11 贴猴插件，Fork form fllesser/nonebot-plugin-emojilik
 NoneBot onebotV11 贴猴插件，Fork form fllesser/nonebot-plugin-emojilike，Powered by Deepseek-R1  
 配置好.env文件中的配置项后可以实现对特定QQ用户的包含特定关键词的信息进行贴猴，妈妈再也不用担心我的腱鞘炎了
 
+依赖于Pydantic V2，但完全兼容Pydantic V1
+
 ## 💿 安装
 
 <details open>
 <summary>pip</summary>
 
     pip install --upgrade nonebot-plugin-emojilike-automonkey
-</details>
-
-<details close>
-
-<summary>若你有大量插件依赖于 Pydantic V1 </summary>
-
-    pip install --upgrade nonebot-plugin-emojilike-automonkey==12.0.0
 </details>
 
 打开 nonebot2 项目根目录下的 `pyproject.toml` 文件, 在 `[tool.nonebot]` 部分追加写入
