@@ -36,12 +36,7 @@ except ImportError:
 __plugin_meta__ = PluginMetadata(
     name="nonebot-plugin-emojilike-automonkey",
     description="nonebot2 贴猴插件",
-    usage="""
-    在.env文件中添加以下配置项:
-    automonkey_users:List[str]监测的用户
-    automonkey_groups:List[str]监测的群聊
-    输入"<COMMANDSTART>贴猴菜单"查看具体使用方式
-    """,
+    usage="/贴猴菜单",
     config=Config,
     type="application",
     homepage="https://github.com/2580m/nonebot-plugin-emojilike-automonkey",
