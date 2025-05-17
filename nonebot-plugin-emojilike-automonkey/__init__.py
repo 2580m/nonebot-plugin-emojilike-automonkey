@@ -28,10 +28,8 @@ automonkey_keys_file = "automonkey_keys.json"
 
 #plugin_config = get_plugin_config(Config)
 
-try:
-    plugin_config = get_plugin_config(Config)
-except ImportError:
-    plugin_config = Config.parse_obj(get_driver().config)
+
+plugin_config = get_plugin_config(Config)
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot-plugin-emojilike-automonkey",
